@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>__TITULO__</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: lista de cartões à esquerda + mapa vetorial dos bairros de BH fixo à direita (estilo Airbnb); no celular, abas Lista/Mapa */
+:root{
+  --bg:#f3f5f4; --surface:#ffffff; --fg:#17201d; --muted:#5d6b66; --line:#dde3e0;
+  --accent:#1f6f5c; --accent-soft:#e1efe9; --warn:#9a5b00; --chip-qa:#3a4fd6; --chip-zap:#c2410c; --chip-vr:#7c3aed;
+  --map-bg:#e9eeec; --tint-s:42%; --tint-l:86%; --edge:#ffffff; --region-edge:#5d6b66;
+  --pin-bg:#ffffff; --pin-fg:#17201d; --pin-on-bg:#17201d; --pin-on-fg:#ffffff; --shadow:0 1px 4px rgba(16,24,22,.28);
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Figtree", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#101614; --surface:#18211e; --fg:#e6ece9; --muted:#9aa9a3; --line:#2a3531;
+  --accent:#5cc7a6; --accent-soft:#1d332c; --warn:#f0b35a; --chip-qa:#9aa6ff; --chip-zap:#fb8a5c; --chip-vr:#c4a5ff;
+  --map-bg:#0c1210; --tint-s:22%; --tint-l:20%; --edge:#0c1210; --region-edge:#9aa9a3;
+  --pin-bg:#e6ece9; --pin-fg:#101614; --pin-on-bg:#5cc7a6; --pin-on-fg:#0c1210; --shadow:0 1px 4px rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101614; --surface:#18211e; --fg:#e6ece9; --muted:#9aa9a3; --line:#2a3531;
+  --accent:#5cc7a6; --accent-soft:#1d332c; --warn:#f0b35a; --chip-qa:#9aa6ff; --chip-zap:#fb8a5c; --chip-vr:#c4a5ff;
+  --map-bg:#0c1210; --tint-s:22%; --tint-l:20%; --edge:#0c1210; --region-edge:#9aa9a3;
+  --pin-bg:#e6ece9; --pin-fg:#101614; --pin-on-bg:#5cc7a6; --pin-on-fg:#0c1210; --shadow:0 1px 4px rgba(0,0,0,.6); color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:1440px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{padding-block:28px 16px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,4vw,40px);line-height:1.05;margin:0 0 8px;text-wrap:balance;letter-spacing:-.01em}
+.lede{color:var(--muted);max-width:75ch;margin:0}
+.lede strong{color:var(--fg)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--bg);border-bottom:1px solid var(--line);padding-block:10px}
+.filters{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:end}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f label,.f .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+input[type=number],input[type=search],select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-width:0}
+input[type=number]{width:110px} input[type=search]{width:190px}
+input:focus-visible,select:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.checks{display:flex;gap:12px;flex-wrap:wrap;padding-block:7px}
+.f .checks label{display:flex;gap:6px;align-items:center;font-size:14px;color:var(--fg);font-weight:500;text-transform:none;letter-spacing:0}
+.count{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;padding-block:7px}
+.count b{color:var(--fg);font-family:var(--display);font-size:18px}
+.tabs{display:none;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:3px}
+.tabs button{font:inherit;font-weight:600;font-size:14px;border:0;background:none;color:var(--muted);padding:6px 16px;border-radius:99px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:20px;padding-block:16px 32px;align-items:start}
+.list{min-width:0}
+.mapcol{align-self:stretch;min-width:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:9px;min-width:0;scroll-margin-top:90px}
+.card.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.top{display:flex;justify-content:space-between;align-items:start;gap:8px}
+.price{font-family:var(--display);font-weight:800;font-size:24px;line-height:1;font-variant-numeric:tabular-nums}
+.price small{font-family:var(--body);font-weight:500;font-size:13px;color:var(--muted)}
+.chip{font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;border:1px solid currentColor;white-space:nowrap}
+.chip.qa{color:var(--chip-qa)} .chip.zap{color:var(--chip-zap)} .chip.vr{color:var(--chip-vr)}
+.also{font-size:12px;color:var(--muted)}
+.flag{color:var(--warn)}
+.pin{z-index:2}
+.pin.dot{z-index:1;font-size:0;padding:0;width:11px;height:11px;border:2px solid var(--pin-bg);background:var(--pin-fg);box-shadow:var(--shadow)}
+.pin.dot:hover{font-size:13px;padding:6px 9px;width:auto;height:auto;z-index:5}
+.total{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.total b{color:var(--fg);font-weight:600}
+.loc b{display:block;font-weight:600;font-size:16px}
+.loc span{color:var(--muted);font-size:13px}
+.specs{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;font-variant-numeric:tabular-nums;border-top:1px solid var(--line);padding-top:9px}
+.specs b{font-weight:600}
+.tag4{color:var(--warn);font-weight:600}
+.actions{margin-top:auto;display:flex;gap:8px}
+.go{flex:1;display:inline-flex;justify-content:center;padding:8px 12px;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-weight:600;text-decoration:none}
+.go:hover{background:var(--accent);color:var(--surface)}
+.locate{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:8px 10px;cursor:pointer}
+.empty{padding:40px;text-align:center;color:var(--muted)}
+
+.mapbox{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);height:calc(100vh - 100px);min-height:420px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--map-bg);touch-action:none;user-select:none;cursor:grab}
+.mapbox.drag{cursor:grabbing}
+.stage{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+.stage svg{display:block}
+.bairro{stroke:var(--edge);stroke-width:2.5;vector-effect:non-scaling-stroke}
+.bairro.has{fill-opacity:1}
+.region{fill:none;stroke:var(--region-edge);stroke-width:1.6;vector-effect:non-scaling-stroke;stroke-opacity:.7}
+.region.sel{stroke:var(--accent);stroke-width:3;stroke-opacity:1}
+.rlabel{position:absolute;transform:translate(-50%,-50%) scale(var(--inv));font-family:var(--display);font-weight:800;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap;cursor:pointer;background:none;border:0;padding:2px 6px;opacity:.85}
+.rlabel:hover,.rlabel.sel{color:var(--accent);opacity:1}
+.pin{position:absolute;transform:translate(-50%,-50%) scale(var(--inv));font:700 13px/1 var(--body);font-variant-numeric:tabular-nums;background:var(--pin-bg);color:var(--pin-fg);border:1px solid rgba(0,0,0,.08);border-radius:99px;padding:6px 9px;box-shadow:var(--shadow);cursor:pointer;white-space:nowrap}
+.pin:hover,.pin.on{background:var(--pin-on-bg);color:var(--pin-on-fg);z-index:3}
+.pin.on{z-index:4}
+.zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:var(--shadow);z-index:5}
+.zoom button{font:600 18px/1 var(--body);width:36px;height:36px;border:0;background:none;color:var(--fg);cursor:pointer}
+.zoom button+button{border-top:1px solid var(--line)}
+.hint{position:absolute;left:12px;top:12px;z-index:5;font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:4px 8px;max-width:calc(100% - 80px)}
+.pop{position:absolute;left:12px;right:12px;bottom:12px;z-index:6;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:12px 14px;display:flex;gap:12px;align-items:center;cursor:default}
+.pop .info{flex:1;min-width:0}
+.pop .p{font-family:var(--display);font-weight:800;font-size:20px;font-variant-numeric:tabular-nums}
+.pop .s{font-size:13px;color:var(--muted)}
+.pop .x{border:0;background:none;color:var(--muted);font-size:20px;cursor:pointer;align-self:start}
+.pop .go{flex:0 0 auto}
+
+.notes{border-top:1px solid var(--line);padding-block:24px 40px;color:var(--muted);font-size:14px}
+.notes h2{font-family:var(--display);font-size:18px;color:var(--fg);margin:0 0 8px}
+.notes ul{padding-left:18px;margin:8px 0;max-width:90ch} .notes a{color:var(--accent)}
+
+@media (max-width:900px){
+  .tabs{display:flex}
+  .bar{position:static}
+  .split{grid-template-columns:minmax(0,1fr)}
+  .split[data-view="lista"] .mapcol{display:none}
+  .split[data-view="mapa"] .list{display:none}
+  .mapbox{position:relative;top:0;height:calc(100vh - 230px);min-height:380px}
+  .count{margin-left:0}
+}
+@media (max-width:560px){input[type=search]{width:100%} .f.grow{flex:1 1 100%}}
+@media (prefers-reduced-motion:no-preference){.go,.pin{transition:background .12s,color .12s}}
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <h1>__TITULO__</h1>
+  <p class="lede">Anúncios coletados em <strong>__DATA_COLETA__</strong> no QuintoAndar, no Zap Imóveis e no Viva Real. Os pontinhos no mapa são anúncios escondidos para não sobrepor; aproxime o mapa para ver o preço. Clique num preço do mapa para ver o anúncio, ou numa regional para filtrar por ela. O filtro de preço vale para o <strong>aluguel</strong>.</p>
+</header>
+<div class="bar"><div class="wrap filters">
+  <div class="f"><label for="max">Aluguel até (R$)</label><input id="max" type="number" min="500" step="100" value="__ALUGUEL_MAX__"></div>
+  <div class="f grow"><label for="q">Bairro ou rua</label><input id="q" type="search" placeholder="Ex.: Serrano, Castelo"></div>
+  <div class="f"><label for="reg">Regional</label><select id="reg"><option value="">Todas</option></select></div>
+  <div class="f"><label for="sort">Ordenar por</label><select id="sort">
+    <option value="aluguel">Menor aluguel</option><option value="total">Menor custo total</option>
+    <option value="area">Maior área</option><option value="m2">Menor R$/m²</option></select></div>
+  <div class="f"><span class="lbl">Sites e quartos</span><div class="checks">
+    <label><input type="checkbox" id="s-qa" checked> QuintoAndar</label>
+    <label><input type="checkbox" id="s-zap" checked> Zap</label>
+    <label><input type="checkbox" id="s-vr" checked> Viva Real</label>
+    <label><input type="checkbox" id="q4"> Incluir 4 quartos</label></div></div>
+  <div class="count"><b id="n">0</b> anúncios</div>
+  <div class="tabs" role="group" aria-label="Ver como"><button id="t-lista" aria-pressed="true">Lista</button><button id="t-mapa" aria-pressed="false">Mapa</button></div>
+</div></div>
+
+<div class="wrap split" id="split" data-view="lista">
+  <section class="list"><div class="grid" id="grid"></div><p class="empty" id="empty" hidden>Nenhum anúncio com esses filtros. Aumente o aluguel máximo, troque a regional ou limpe a busca.</p></section>
+  <section class="mapcol">
+    <div class="mapbox" id="map" aria-label="Mapa dos bairros de Belo Horizonte com os preços">
+      <div class="stage" id="stage"></div>
+      <div class="hint">Posição aproximada, pelo bairro</div>
+      <div class="zoom"><button id="zin" aria-label="Aproximar">+</button><button id="zout" aria-label="Afastar">−</button><button id="zfit" aria-label="Ver tudo">⤢</button></div>
+      <div class="pop" id="pop" hidden></div>
+    </div>
+  </section>
+</div>
+
+<section class="wrap notes">
+  <h2>Sobre a coleta</h2>
+  <ul>
+    <li><strong>Mapa:</strong> cada preço fica dentro do bairro do anúncio, num ponto aproximado (os sites não informam o número do prédio). As cores marcam as 9 regionais da Prefeitura. Manacás aparece junto ao Aeroporto e Horto Florestal junto ao Horto.</li>
+    <li><strong>QuintoAndar:</strong> o "total" é o que o site mostra (aluguel + condomínio + IPTU + seguro incêndio + taxa de serviço). A diferença aparece como "extras".</li>
+    <li><strong>Zap Imóveis e Viva Real:</strong> 5 páginas de cada site, coletadas a partir de um computador pessoal (os servidores em nuvem são bloqueados por esses sites). Os dois sites são do mesmo grupo e repetem quase todos os imóveis; cada imóvel aparece uma vez só, com a marca "também no Viva Real" quando for o caso. O total soma aluguel + condomínio + IPTU. Quando o IPTU informado parecia ser o valor anual (acima de R$ 800), ele foi dividido por 12.</li>
+    <li><strong>OLX:</strong> bloqueou a coleta automática (proteção anti-robô da Cloudflare). Dá para conferir direto: <a href="https://www.olx.com.br/imoveis/aluguel/apartamentos/3-quartos/estado-mg/belo-horizonte-e-regiao" target="_blank" rel="noopener">OLX em BH (3 quartos)</a>.</li>
+    <li><strong>Bairros fora da base do mapa:</strong> Indaiá, Fernão Dias, Silveira, Diamante, Araguaia, Candelária e Parque São Pedro aparecem dentro de um bairro vizinho (marcados com "posição aproximada").</li>
+    <li>Anúncios mudam rápido; alguns podem já ter sido alugados.</li>
+  </ul>
+</section>
+
+<script>
+const DATA = __DATA__;
+const GEO = __GEO__;
+const HUES = {"Centro-Sul":160,"Oeste":200,"Barreiro":250,"Noroeste":35,"Pampulha":95,"Venda Nova":300,"Norte":15,"Nordeste":55,"Leste":130};
+const $ = id => document.getElementById(id);
+const brl = n => n.toLocaleString("pt-BR",{style:"currency",currency:"BRL",maximumFractionDigits:0});
+const short = n => n>=1000 ? "R$ "+(n/1000).toLocaleString("pt-BR",{maximumFractionDigits:1})+" mil" : "R$ "+n;
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+DATA.forEach((d,i)=>d.id=i);
+
+/* ---------- mapa ---------- */
+const stage=$("stage"), mapEl=$("map"), NS="http://www.w3.org/2000/svg";
+const svg=document.createElementNS(NS,"svg");
+svg.setAttribute("width",GEO.w); svg.setAttribute("height",GEO.h); svg.setAttribute("viewBox",`0 0 ${GEO.w} ${GEO.h}`);
+const bairroHas=new Set(DATA.map(d=>norm(d.bairro)));
+GEO.bairros.forEach(b=>{
+  const p=document.createElementNS(NS,"path");
+  p.setAttribute("d",b.d); p.setAttribute("class","bairro");
+  const h=HUES[b.r]??0;
+  p.style.fill=`hsl(${h} var(--tint-s) var(--tint-l))`;
+  const t=document.createElementNS(NS,"title"); t.textContent=b.n+" · "+b.r; p.appendChild(t);
+  svg.appendChild(p);
+});
+const regionPaths={};
+GEO.regions.forEach(r=>{
+  const p=document.createElementNS(NS,"path");
+  p.setAttribute("d",r.d); p.setAttribute("class","region"); svg.appendChild(p); regionPaths[r.r]=p;
+});
+stage.appendChild(svg);
+const regionLabels={};
+GEO.regions.forEach(r=>{
+  const b=document.createElement("button"); b.className="rlabel"; b.textContent=r.r;
+  b.style.left=r.x+"px"; b.style.top=r.y+"px";
+  b.addEventListener("click",e=>{e.stopPropagation(); $("reg").value = $("reg").value===r.r ? "" : r.r; render(); if($("reg").value) fitRegion(r.r);});
+  stage.appendChild(b); regionLabels[r.r]=b;
+});
+Object.keys(HUES).sort().forEach(r=>{const o=document.createElement("option");o.value=r;o.textContent=r;$("reg").appendChild(o);});
+
+let view={x:0,y:0,k:1};
+let declutterQ=false;
+function apply(){stage.style.transform=`translate(${view.x}px,${view.y}px) scale(${view.k})`; stage.style.setProperty("--inv",1/view.k);
+  if(!declutterQ){declutterQ=true; requestAnimationFrame(()=>{declutterQ=false; declutter();});}}
+let VISIBLE=[];
+function declutter(){
+  if(typeof pins==="undefined") return;
+  const placed=[], W=74, H=28;
+  const order=[...VISIBLE].sort((a,b)=>(b.id===selected)-(a.id===selected)||a.aluguel-b.aluguel);
+  for(const d of order){
+    const sx=d.x*view.k, sy=d.y*view.k;
+    const hit=placed.some(p=>Math.abs(p.x-sx)<W && Math.abs(p.y-sy)<H);
+    pins[d.id].classList.toggle("dot",hit);
+    if(!hit) placed.push({x:sx,y:sy});
+  }
+}
+function fitBox(x0,y0,x1,y1,pad=40){
+  const W=mapEl.clientWidth,H=mapEl.clientHeight; if(!W||!H) return;
+  const k=Math.min((W-pad*2)/(x1-x0),(H-pad*2)/(y1-y0),1.4);
+  view={k, x:W/2-(x0+x1)/2*k, y:H/2-(y0+y1)/2*k}; apply();
+}
+function fitAll(){
+  const xs=DATA.map(d=>d.x), ys=DATA.map(d=>d.y);
+  fitBox(Math.min(...xs)-120,Math.min(...ys)-120,Math.max(...xs)+120,Math.max(...ys)+120);
+}
+function fitRegion(r){
+  const bb=regionPaths[r].getBBox(); fitBox(bb.x,bb.y,bb.x+bb.width,bb.y+bb.height,30);
+}
+function zoomAt(f,cx,cy){
+  const k=Math.max(.15,Math.min(4,view.k*f)); f=k/view.k;
+  view.x=cx-(cx-view.x)*f; view.y=cy-(cy-view.y)*f; view.k=k; apply();
+}
+mapEl.addEventListener("wheel",e=>{e.preventDefault(); const r=mapEl.getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY*0.0015),e.clientX-r.left,e.clientY-r.top);},{passive:false});
+const pts=new Map(); let moved=false, lastDist=0;
+mapEl.addEventListener("pointerdown",e=>{ if(e.target.closest(".zoom,.pop")) return; pts.set(e.pointerId,{x:e.clientX,y:e.clientY}); moved=false; mapEl.classList.add("drag");});
+window.addEventListener("pointermove",e=>{
+  if(!pts.has(e.pointerId)) return;
+  const prev=pts.get(e.pointerId); const cur={x:e.clientX,y:e.clientY}; pts.set(e.pointerId,cur);
+  if(pts.size===1){ const dx=cur.x-prev.x, dy=cur.y-prev.y; if(Math.abs(dx)+Math.abs(dy)>2) moved=true; view.x+=dx; view.y+=dy; apply(); }
+  else if(pts.size===2){ const [a,b]=[...pts.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); const r=mapEl.getBoundingClientRect();
+    if(lastDist) zoomAt(d/lastDist,(a.x+b.x)/2-r.left,(a.y+b.y)/2-r.top); lastDist=d; moved=true; }
+});
+const up=e=>{pts.delete(e.pointerId); if(pts.size<2) lastDist=0; if(!pts.size) mapEl.classList.remove("drag");};
+window.addEventListener("pointerup",up); window.addEventListener("pointercancel",up);
+mapEl.addEventListener("click",e=>{ if(moved){moved=false;return;} if(!e.target.closest(".pin,.pop,.zoom,.rlabel")) select(null); });
+$("zin").onclick=()=>zoomAt(1.4,mapEl.clientWidth/2,mapEl.clientHeight/2);
+$("zout").onclick=()=>zoomAt(1/1.4,mapEl.clientWidth/2,mapEl.clientHeight/2);
+$("zfit").onclick=()=>{ $("reg").value ? fitRegion($("reg").value) : fitAll(); };
+
+const pins={};
+DATA.forEach(d=>{
+  const b=document.createElement("button"); b.className="pin"; b.dataset.id=d.id; b.textContent=short(d.aluguel);
+  b.style.left=d.x+"px"; b.style.top=d.y+"px"; b.setAttribute("aria-label",`${brl(d.aluguel)} em ${d.bairro}`);
+  b.addEventListener("click",e=>{e.stopPropagation(); if(!moved) select(d.id,"map");});
+  b.addEventListener("mouseenter",()=>hl(d.id,true)); b.addEventListener("mouseleave",()=>hl(d.id,false));
+  stage.appendChild(b); pins[d.id]=b;
+});
+
+/* ---------- seleção ---------- */
+let selected=null;
+function hl(id,on){ const c=document.querySelector(`.card[data-id="${id}"]`); if(c && id!==selected) c.classList.toggle("on",on); }
+function select(id,from){
+  if(selected!==null){ pins[selected]?.classList.remove("on"); document.querySelector(`.card[data-id="${selected}"]`)?.classList.remove("on"); }
+  selected=id; const pop=$("pop");
+  if(id===null){ pop.hidden=true; return; }
+  const d=DATA[id]; pins[id].classList.add("on"); declutter();
+  const card=document.querySelector(`.card[data-id="${id}"]`); card?.classList.add("on");
+  pop.innerHTML=`<div class="info"><div class="p">${brl(d.aluguel)} <span class="s">· total ${brl(d.total)}</span></div>
+    <div class="s"><b style="color:var(--fg)">${esc(d.bairro)}</b> · ${esc(d.regional)} · ${d.area} m² · ${d.quartos} quartos · ${d.vagas??"?"} vaga(s)</div></div>
+    <a class="go" href="${esc(d.url)}" target="_blank" rel="noopener">Ver anúncio</a><button class="x" aria-label="Fechar">×</button>`;
+  pop.querySelector(".x").onclick=e=>{e.stopPropagation(); select(null);};
+  pop.hidden=false;
+  if(from==="map" && card && !matchMedia("(max-width:900px)").matches) card.scrollIntoView({behavior:"smooth",block:"nearest"});
+  if(from==="list"){
+    const W=mapEl.clientWidth,H=mapEl.clientHeight; const k=Math.max(view.k,.6);
+    view={k,x:W/2-d.x*k,y:H/2.4-d.y*k}; apply();
+  }
+}
+
+/* ---------- lista e filtros ---------- */
+function render(){
+  const max=+$("max").value||Infinity, q=norm($("q").value.trim()), sort=$("sort").value, reg=$("reg").value;
+  const sites={"QuintoAndar":$("s-qa").checked,"Zap Imóveis":$("s-zap").checked,"Viva Real":$("s-vr").checked};
+  let rows=DATA.filter(d=>d.aluguel<=max && sites[d.site] && (d.quartos===3||$("q4").checked)
+    && (!reg||d.regional===reg) && (!q||norm(d.bairro+" "+d.rua).includes(q)));
+  const key={aluguel:d=>d.aluguel,total:d=>d.total,area:d=>-d.area,m2:d=>d.aluguel/d.area}[sort];
+  rows.sort((a,b)=>key(a)-key(b));
+  $("n").textContent=rows.length; $("empty").hidden=rows.length>0;
+  const vis=new Set(rows.map(d=>d.id));
+  DATA.forEach(d=>pins[d.id].hidden=!vis.has(d.id)); VISIBLE=rows; declutter();
+  if(selected!==null && !vis.has(selected)) select(null);
+  Object.entries(regionPaths).forEach(([r,p])=>p.classList.toggle("sel",r===reg));
+  Object.entries(regionLabels).forEach(([r,b])=>b.classList.toggle("sel",r===reg));
+  $("grid").innerHTML=rows.map(d=>`<article class="card${d.id===selected?" on":""}" data-id="${d.id}">
+    <div class="top"><div class="price">${brl(d.aluguel)} <small>/mês</small></div>
+      <span class="chip ${{"QuintoAndar":"qa","Zap Imóveis":"zap","Viva Real":"vr"}[d.site]}">${d.site}</span></div>
+    <div class="total">${d.extrasTipo==="total"?"Extras":(d.semCond?"IPTU (cond. não informado)":"Cond. + IPTU")} ${brl(d.extras)}${d.iptuAnual?'<span class="flag" title="IPTU anual dividido por 12"> *</span>':""} · Total <b>${brl(d.total)}</b></div>${d.tambem?`<div class="also">Também no ${d.tambem}</div>`:""}
+    <div class="loc"><b>${esc(d.bairro)}</b><span>${d.rua?esc(d.rua):"Rua não informada"} · Regional ${esc(d.regional)}${d.aprox?" · posição aproximada no mapa":""}</span></div>
+    <div class="specs"><span><b>${d.area}</b> m²</span><span class="${d.quartos>3?"tag4":""}"><b>${d.quartos}</b> quartos</span>
+      <span><b>${d.vagas??"?"}</b> ${d.vagas===1?"vaga":"vagas"}</span><span><b>${brl(Math.round(d.aluguel/d.area))}</b>/m²</span></div>
+    <div class="actions"><button class="locate" data-loc="${d.id}">No mapa</button><a class="go" href="${esc(d.url)}" target="_blank" rel="noopener">Ver anúncio</a></div></article>`).join("");
+}
+$("grid").addEventListener("click",e=>{
+  const b=e.target.closest("[data-loc]"); if(!b) return;
+  if(matchMedia("(max-width:900px)").matches) setView("mapa");
+  requestAnimationFrame(()=>select(+b.dataset.loc,"list"));
+});
+$("grid").addEventListener("mouseover",e=>{const c=e.target.closest(".card"); document.querySelectorAll(".pin.hov").forEach(p=>p.classList.remove("hov","on")); if(c){const p=pins[c.dataset.id]; if(+c.dataset.id!==selected){p.classList.add("hov","on");}}});
+$("grid").addEventListener("mouseleave",()=>document.querySelectorAll(".pin.hov").forEach(p=>{p.classList.remove("hov"); if(+p.dataset?.id!==selected) p.classList.remove("on");}));
+["max","q","sort","s-qa","s-zap","s-vr","q4"].forEach(id=>$(id).addEventListener("input",render));
+$("reg").addEventListener("input",()=>{render(); $("reg").value?fitRegion($("reg").value):fitAll();});
+
+function setView(v){
+  $("split").dataset.view=v; $("t-lista").setAttribute("aria-pressed",v==="lista"); $("t-mapa").setAttribute("aria-pressed",v==="mapa");
+  if(v==="mapa") requestAnimationFrame(()=>{ if(selected===null) ($("reg").value?fitRegion($("reg").value):fitAll()); });
+}
+$("t-lista").onclick=()=>setView("lista"); $("t-mapa").onclick=()=>setView("mapa");
+let fitted=false;
+new ResizeObserver(()=>{ if(!fitted && mapEl.clientWidth){ fitAll(); fitted=true; } }).observe(mapEl);
+render(); apply();
+</script>
+</body>
+</html>

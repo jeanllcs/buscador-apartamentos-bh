@@ -1,0 +1,4 @@
+build/geo/
+build/saida/
+__pycache__/
+.venv/
